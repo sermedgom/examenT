@@ -19,9 +19,12 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
+import org.ocpsoft.prettytime.PrettyTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDate;
 
@@ -35,6 +38,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 
 import static org.vaadin.example.MensajeFormatter.formatMensaje;
 
@@ -163,7 +167,6 @@ public class MainView extends VerticalLayout {
         TextField mensaje = new TextField("Mensaje");
         DatePicker fecha = new DatePicker("Fecha");
         fecha.setValue(LocalDate.now());
-        //fecha.setValue(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
 
         Button submit = new Button("Submit", event -> UI.getCurrent().getPage().reload());
 
@@ -171,29 +174,31 @@ public class MainView extends VerticalLayout {
         submit.addClickListener(event -> {
             String nombreValue = nombre.getValue();
             String mensajeValue = mensaje.getValue();
-            String fechaValue = fecha.getValue().toString();; // Obtener la fecha seleccionada
+            String fechaValue = fecha.getValue().toString();
 
-            //LocalDate fechaValue = LocalDate.parse(dateValue, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd");
+            try {
+                Date fechaSeleccionada = formatoFecha.parse(fechaValue);
+                PrettyTime prettyTime = new PrettyTime();
+                String fechaFormateada = prettyTime.format(fechaSeleccionada);
 
-            // Do something with the values
-            // for example, print them
-            System.out.println("Nombre: " + nombreValue);
-            System.out.println("Mensaje: " + mensajeValue);
-            System.out.println("Fecha: " + fechaValue);
+                System.out.println("Nombre: " + nombreValue);
+                System.out.println("Mensaje: " + mensajeValue);
+                System.out.println("Fecha: " + fechaFormateada);
 
-            int maxId = 0;
-            for (Tweet tweet : zonas) {
-                if (tweet.getId() > maxId) {
-                    maxId = tweet.getId();
+                int maxId = 0;
+                for (Tweet tweet : zonas) {
+                    if (tweet.getId() > maxId) {
+                        maxId = tweet.getId();
+                    }
                 }
+
+                int newId = maxId + 1;
+                Tweet newprod = new Tweet(newId, nombreValue, mensajeValue, fechaFormateada);
+                postnuevo(newprod);
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
-
-            // Incrementar el valor más alto en 1 para obtener un nuevo id
-            int newId = maxId + 1;
-
-
-            Tweet newprod = new Tweet(newId, nombreValue,mensajeValue,fechaValue);
-            postnuevo(newprod);
         });
 
 
